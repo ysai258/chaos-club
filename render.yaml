@@ -1,0 +1,25 @@
+# Render Blueprint for Chaos Club.
+#
+#   render.com -> New -> Blueprint -> connect this repo -> Apply
+#
+# One free Node web service. It serves the built web app, the HTTP API and the
+# WebSocket (/ws) on the same origin. Rooms live in memory: a restart or
+# redeploy ends games in progress, and the free plan sleeps when idle.
+services:
+  - type: web
+    name: chaos-club
+    runtime: node
+    plan: free
+    region: singapore
+    # Dev dependencies are needed for the build (vite, esbuild, tailwind).
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    # Liveness only: answers as long as the process is up.
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      # Render injects PORT; the server reads it.

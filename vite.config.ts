@@ -10,10 +10,13 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     port: Number(process.env.WEB_PORT ?? 5199),
+    // Several agents run dev stacks side by side: never silently hop ports.
+    strictPort: true,
     host: true,
     proxy: {
       '/ws': { target: `ws://localhost:${serverPort}`, ws: true },
       '/api': `http://localhost:${serverPort}`,
+      '/health': `http://localhost:${serverPort}`,
     },
   },
   build: { outDir: '../../dist/web', emptyOutDir: true },
