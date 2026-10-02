@@ -1,0 +1,44 @@
+{
+  "name": "chaos-club",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Team party games for friends on a video call. Open a link, pick a side, cause chaos.",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "dev": "concurrently -k -n server,web -c magenta,cyan \"npm:dev:server\" \"npm:dev:web\"",
+    "dev:server": "tsx watch src/server/index.ts",
+    "dev:web": "vite",
+    "build": "vite build && esbuild src/server/index.ts --bundle --platform=node --format=esm --target=node22 --packages=external --outfile=dist/server.mjs",
+    "start": "node dist/server.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "ws": "^8.22.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/canvas-confetti": "^1.9.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/ws": "^8.5.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "canvas-confetti": "^1.9.3",
+    "concurrently": "^9.0.0",
+    "esbuild": "^0.28.2",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0",
+    "vite": "^8.3.2",
+    "vitest": "^5.0.3",
+    "wouter": "^3.13.0"
+  }
+}
