@@ -90,6 +90,8 @@ tests/
 
 ## Deploy (Render, free)
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/ysai258/chaos-club)
+
 The repo carries a Blueprint: [`render.yaml`](render.yaml).
 
 1. Push to GitHub.
