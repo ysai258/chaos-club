@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { GameScreenProps, WebGame } from '../types.ts'
 import type { BombSquadView, HeckleKind, ModuleView, Prediction } from '../../../games/bomb-squad/shared.ts'
 import { Avatar, Badge, Button, Card, Countdown, Segmented, TeamPill, celebrate, cn, haptic, playSound, toast } from '../../ui/index.ts'
@@ -16,7 +16,10 @@ type Props = GameScreenProps<BombSquadView>
 function Screen(props: Props) {
   const { view: v, onEvent, me, player } = props
   const [flash, setFlash] = useState<null | 'boom' | 'defused'>(null)
-  const [shake, setShake] = useState(0)
+  // Shake on a strike by restarting the CSS animation in place. Remounting
+  // (a changing key) would wipe the defuser's selected module and every
+  // expert's manual search at the worst possible moment.
+  const shakeRef = useRef<HTMLDivElement>(null)
   const [bubbles, setBubbles] = useState<{ id: number; emoji: string; name: string; x: number }[]>([])
   const onMyTeam = v.activeTeamId !== null && me.teamId === v.activeTeamId
 
@@ -25,7 +28,13 @@ function Screen(props: Props) {
       case 'armed':
         playSound('whoosh'); haptic('heavy'); break
       case 'strike':
-        playSound('error'); haptic('error'); setShake((n) => n + 1); break
+        playSound('error'); haptic('error')
+        if (shakeRef.current) {
+          shakeRef.current.classList.remove('animate-shake')
+          void shakeRef.current.offsetWidth
+          shakeRef.current.classList.add('animate-shake')
+        }
+        break
       case 'solved':
         playSound('success'); haptic('success'); break
       case 'boom':
@@ -54,7 +63,7 @@ function Screen(props: Props) {
 
   return (
     <div className="relative mx-auto flex w-full max-w-[520px] flex-col gap-3 pb-6" data-testid="bomb-squad" data-role={v.role} data-phase={v.phase}>
-      <div key={shake} className={cn('flex flex-col gap-3', shake > 0 && 'animate-shake')}>
+      <div ref={shakeRef} className="flex flex-col gap-3">
         <TopLine {...props} />
         <Body {...props} />
       </div>
