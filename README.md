@@ -25,12 +25,12 @@ in for the next one.
 
 | | Game | The pitch | Players | Teams | Time | How to play |
 | --- | --- | --- | --- | --- | --- | --- |
-| 💣 | **Bomb Squad** | One phone has the bomb. Everyone else has a scrap of the manual. Talk fast. | 2–16 | 2–4 | ~20 min | [▶ 4:03](https://github.com/ysai258/chaos-club/releases/download/how-to-play-v1/bomb-squad.mp4) |
-| 👂 | **Overheard** | Say your secret code out loud. The other team is listening. | 4–16 | 2 | ~25 min | [▶ 4:05](https://github.com/ysai258/chaos-club/releases/download/how-to-play-v1/overheard.mp4) |
-| ⚖️ | **Friend Court** | Your friends are on trial. The evidence is ridiculous. Argue anyway. | 3–16 | 2–4 | ~15 min | [▶ 3:20](https://github.com/ysai258/chaos-club/releases/download/how-to-play-v1/friend-court.mp4) |
-| 🦈 | **Pitch Wars** | Sell a terrible startup to your friends. Live. For crores. | 2–16 | 2–4 | ~15 min | [▶ 3:54](https://github.com/ysai258/chaos-club/releases/download/how-to-play-v1/pitch-wars.mp4) |
-| 🐀 | **The Mole** | Crack the challenges. Catch the traitor on your own team. | 6–16 | 2–4 | ~15 min | [▶ 3:40](https://github.com/ysai258/chaos-club/releases/download/how-to-play-v1/the-mole.mp4) |
-| ✏️ | **Silent Sketch Relay** | One stroke each. No talking. Your teammate just ruined the elephant. | 2–16 | 2–4 | ~12 min | [▶ 2:52](https://github.com/ysai258/chaos-club/releases/download/how-to-play-v1/sketch-relay.mp4) |
+| 💣 | **Bomb Squad** | One phone has the bomb. Everyone else has a scrap of the manual. Talk fast. | 2–16 | 2–4 | ~20 min | [▶ 4:33](https://github.com/ysai258/chaos-club/releases/download/how-to-play-v1/bomb-squad.mp4) |
+| 👂 | **Overheard** | Say your secret code out loud. The other team is listening. | 4–16 | 2 | ~25 min | [▶ 4:13](https://github.com/ysai258/chaos-club/releases/download/how-to-play-v1/overheard.mp4) |
+| ⚖️ | **Friend Court** | Your friends are on trial. The evidence is ridiculous. Argue anyway. | 3–16 | 2–4 | ~15 min | [▶ 3:24](https://github.com/ysai258/chaos-club/releases/download/how-to-play-v1/friend-court.mp4) |
+| 🦈 | **Pitch Wars** | Sell a terrible startup to your friends. Live. For crores. | 2–16 | 2–4 | ~15 min | [▶ 3:59](https://github.com/ysai258/chaos-club/releases/download/how-to-play-v1/pitch-wars.mp4) |
+| 🐀 | **The Mole** | Crack the challenges. Catch the traitor on your own team. | 6–16 | 2–4 | ~15 min | [▶ 3:42](https://github.com/ysai258/chaos-club/releases/download/how-to-play-v1/the-mole.mp4) |
+| ✏️ | **Silent Sketch Relay** | One stroke each. No talking. Your teammate just ruined the elephant. | 2–16 | 2–4 | ~12 min | [▶ 3:05](https://github.com/ysai258/chaos-club/releases/download/how-to-play-v1/sketch-relay.mp4) |
 
 Every game has a narrated **how-to-play video**: six friends play a real
 round while a narrator explains. Tap **▶ Watch how to play** in the lobby or

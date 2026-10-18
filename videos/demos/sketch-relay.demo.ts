@@ -1228,8 +1228,9 @@ function plan(d: Drawing): S[] {
 
 // ---------------------------------------------------------------- narration
 
-const NAMES = ['Asha', 'Ben', 'Chen', 'Dev', 'Esha', 'Farhan']
-const TEAMS = [['Asha', 'Chen', 'Esha'], ['Ben', 'Dev', 'Farhan']]
+const HOST = 'Yash'
+const NAMES = [HOST, 'Charan', 'Manu', 'Aravind', 'Srinivas', 'Joga']
+const TEAMS = [[HOST, 'Manu', 'Srinivas'], ['Charan', 'Aravind', 'Joga']]
 
 const N = {
   intro: 'Silent Sketch Relay! Six friends on one Meet call, two teams of three. The host picks the game and a few settings.',
@@ -1420,11 +1421,11 @@ async function quickRound(film: Film): Promise<void> {
 
 test('sketch-relay', async ({ browser }) => {
   const film = await startFilm(browser, { game: 'sketch-relay', names: NAMES, teams: TEAMS, lines: LINES })
-  const host = film.page('Asha')
+  const host = film.page(HOST)
 
   // ------------------------------------------------ lobby
   film.caption('Setting up')
-  film.focus('Asha')
+  film.focus(HOST)
   await film.sayWhile(N.intro, () =>
     setUpLobby(film, { game: 'sketch-relay', teams: TEAMS, settings: { secondsPerStroke: 12, roundsPerTeam: 2, strokesPerRound: 12, chaos: true } }),
   )
@@ -1554,7 +1555,7 @@ test('sketch-relay', async ({ browser }) => {
 
   // ------------------------------------------------ rounds 3–4: chaos cards (the first one that turns up is shown)
   const chaosOn = async (): Promise<string | null> => {
-    const text = await root(film.page('Asha')).innerText()
+    const text = await root(film.page(HOST)).innerText()
     const name = /Chaos card: ([^\n]+)/.exec(text)?.[1]?.trim()
     if (!name) return null
     return ({ 'Fog of War': 'fog', Blitz: 'blitz', 'Ink Drought': 'drought', 'Topsy-Turvy': 'flip', 'Fat Markers': 'fat' } as Record<string, string>)[name] ?? 'fat'
@@ -1605,8 +1606,8 @@ test('sketch-relay', async ({ browser }) => {
 
   // ------------------------------------------------ gallery and results
   film.caption('The gallery')
-  film.spotlight('Asha')
-  film.focus('Asha')
+  film.spotlight(HOST)
+  film.focus(HOST)
   if (!shownChaos) await film.say(N.noChaos)
   await host.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
   await film.sayWhile(N.gallery, async () => {

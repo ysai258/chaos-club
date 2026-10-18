@@ -7,7 +7,7 @@ spotlight that enlarges one phone when its screen matters.
 
 ```bash
 # 1. Film (plays the game at human speed in six recorded phones)
-flock videos/.record.lock env VIDEO_SERVER_PORT=8911 VIDEO_WEB_PORT=5911 npm run video:record -- bomb-squad
+videos/record.sh bomb-squad 8911 5911   # at most 3 films at once (VIDEO_SLOTS)
 # 2. Assemble (add --preview for a fast half-size render)
 npm run video:compose -- bomb-squad
 # -> videos/out/bomb-squad.mp4

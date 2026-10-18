@@ -60,8 +60,9 @@ const N = {
 
 const allLines = (o: unknown): string[] => (typeof o === 'string' ? [o] : Object.values(o as object).flatMap(allLines))
 
-const NAMES = ['Asha', 'Ben', 'Chen', 'Dev', 'Esha', 'Farhan']
-const TEAMS = [['Asha', 'Chen', 'Esha'], ['Ben', 'Dev', 'Farhan']]
+const NAMES = ['Yash', 'Charan', 'Manu', 'Aravind', 'Srinivas', 'Joga']
+const HOST = NAMES[0]!
+const TEAMS = [['Yash', 'Manu', 'Srinivas'], ['Charan', 'Aravind', 'Joga']]
 const SETTINGS = { rounds: 4, pace: 'Chill (longer)' }
 
 // ---------- phone helpers ----------
@@ -141,7 +142,7 @@ test('the-mole', async ({ browser }) => {
     film = await startFilm(browser, { game: 'the-mole', names: NAMES, teams: TEAMS, lines: allLines(N) })
     film.caption('Setting up')
     await film.say(N.intro)
-    film.focus('Asha')
+    film.focus(HOST)
     await film.sayWhile(N.lobby, () => setUpLobby(film, { game: 'the-mole', teams: TEAMS, settings: SETTINGS }))
     film.focus(null)
     await film.say(N.coop)
@@ -438,11 +439,11 @@ test('the-mole', async ({ browser }) => {
 
   // ---- Results ----
   film.caption('Final scores')
-  film.focus('Asha')
+  film.focus(HOST)
   await tap(film.room.host.getByTestId('mole-finish'))
   await expect(film.room.host.getByTestId('results')).toBeVisible({ timeout: 20_000 })
   film.focus(null)
-  film.spotlight('Asha')
+  film.spotlight(HOST)
   await film.say(N.results)
   await film.pause(1500)
   await film.finish()

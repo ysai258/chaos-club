@@ -89,7 +89,7 @@ const CLUES: Record<string, [string, string, string]> = {
   Mirror: ['Reflection', 'Snow White', 'Glass'],
   Ladder: ['Rungs', 'Climb', 'Snakes and'],
   Candle: ['Wax', 'Birthday', 'Flame'],
-  Clock: ['Tick tock', 'Alarm', 'Big Ben'],
+  Clock: ['Tick tock', 'Alarm', 'Big Charan'],
   Pillow: ['Cushion', 'Sleep', 'Soft'],
   Padlock: ['Key', 'Godrej', 'Chain'],
   Bridge: ['Howrah', 'Golden Gate', 'Sea link'],
@@ -258,36 +258,38 @@ const CLUES: Record<string, [string, string, string]> = {
 }
 // CLUES-END
 
+/** The six players; the first is the host. Team 1: Yash, Manu, Srinivas. Team 2: Charan, Aravind, Joga. */
+const NAMES = ['Yash', 'Charan', 'Manu', 'Aravind', 'Srinivas', 'Joga']
+const TEAM_A = ['Yash', 'Manu', 'Srinivas']
+const TEAM_B = ['Charan', 'Aravind', 'Joga']
+
 const N = {
   intro: 'Six friends on one Google Meet call, each on their own phone. Tonight: Overheard!',
   lobby: 'The host picks the game, splits everyone into two teams of three, and sets short timers.',
-  words: 'Each team gets four secret words, numbered one to four. Here is the sheet for Asha’s team.',
-  rivals: 'Ben’s team has four words too. On their rivals tab: no words at all, just blanks for guessing.',
-  encryptor: 'Each round, one player per team is the encryptor. This round it’s Asha, and her phone shows a secret code.',
-  clues: 'One clue per number. Easy for her own team, confusing for the rivals, because everyone will hear them.',
-  sand: 'Ben has sent his clues first, so Asha’s timer drops to thirty seconds. Hurry, Asha!',
-  onair: 'Now, the on-air moment. Asha reads each clue out loud on the call, then taps to show it.',
-  popup: 'Every clue pops up on every phone, rivals included. Ben’s team hears all of it.',
-  decode: 'Now Asha’s team cracks the code. Not out loud, the rivals are listening! They whisper in the private team chat.',
-  pick: 'Chen taps a number for each clue, then locks it in. Anyone on the team can do this.',
+  words: 'Each team gets four secret words, numbered one to four. Here is the sheet for Yash’s team.',
+  rivals: 'Charan’s team has four words too. On their rivals tab: no words at all, just blanks for guessing.',
+  encryptor: 'Each round, one player per team is the encryptor. This round it’s Yash, and his phone shows a secret code.',
+  clues: 'One clue per number. Easy for his own team, confusing for the rivals, because everyone will hear them.',
+  sand: 'Charan has sent his clues first, so Yash’s timer drops to thirty seconds. Hurry, Yash!',
+  onair: 'Now, the on-air moment. Yash reads each clue out loud on the call, then taps to show it.',
+  popup: 'Every clue pops up on every phone, rivals included. Charan’s team hears all of it.',
+  decode: 'Now Yash’s team cracks the code. Not out loud, the rivals are listening! They whisper in the private team chat.',
+  pick: 'Manu taps a number for each clue, then locks it in. Anyone on the team can do this.',
   stat: 'Get your own code wrong, and your team takes a static token. Two static, and you lose.',
   reveal1: 'Decoded! The clues now sit under their numbers, on a sheet both teams can see.',
-  ben: 'Then it’s Ben’s turn on air. Same drill: three clues, read out loud.',
-  benDecode: 'Ben’s team decodes in their own chat. In round one, the rivals can’t guess yet. They just listen.',
-  reveal2: 'Decoded again! Ben’s clues are now on the record, filed under their numbers.',
-  round2: 'Round two: Chen and Dev encrypt, and now the rivals can intercept! Dev sees his team’s old clues under each word.',
-  devAir: 'Dev goes on air first. This time, Asha’s team is listening very carefully.',
-  intel: 'Their intel tab shows every clue Ben’s team has given, grouped by number. Time to play detective.',
-  plot: 'They plot in team chat. Some of Dev’s clues sound a lot like Ben’s clues from last round!',
-  tapRule: 'Esha locks it in. Guess the rivals’ code exactly, and you earn a wiretap token. Two wiretaps win the game.',
-  wiretapped: 'Wiretapped! Asha’s team cracked Dev’s code without ever seeing his words.',
-  results: 'One round later, Asha’s team pulls off a second wiretap, and wins the game!',
+  ben: 'Then it’s Charan’s turn on air. Same drill: three clues, read out loud.',
+  benDecode: 'Charan’s team decodes in their own chat. In round one, the rivals can’t guess yet. They just listen.',
+  reveal2: 'Decoded again! Charan’s clues are now on the record, filed under their numbers.',
+  round2: 'Round two: Manu and Aravind encrypt, and now the rivals can intercept! Aravind sees his team’s old clues under each word.',
+  devAir: 'Aravind goes on air first. This time, Yash’s team is listening very carefully.',
+  intel: 'Their intel tab shows every clue Charan’s team has given, grouped by number. Time to play detective.',
+  plot: 'They plot in team chat. Some of Aravind’s clues sound a lot like Charan’s clues from last round!',
+  tapRule: 'Srinivas locks it in. Guess the rivals’ code exactly, and you earn a wiretap token. Two wiretaps win the game.',
+  wiretapped: 'Wiretapped! Yash’s team cracked Aravind’s code without ever seeing his words.',
+  results: 'One round later, Yash’s team pulls off a second wiretap, and wins the game!',
   outro: 'Be obvious to your team, baffling to theirs. Grab five friends, hop on a call, and play Overheard!',
 }
 
-const NAMES = ['Asha', 'Ben', 'Chen', 'Dev', 'Esha', 'Farhan']
-const TEAM_A = ['Asha', 'Chen', 'Esha']
-const TEAM_B = ['Ben', 'Dev', 'Farhan']
 const ORDINAL = ['First clue', 'Second clue', 'Third clue']
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))
 
@@ -388,8 +390,8 @@ async function readAloud(film: Film, name: string, clue: string, i: number) {
 }
 
 async function nextIfReveal(film: Film) {
-  const next = film.page('Asha').getByRole('button', { name: /Next/ })
-  if ((await film.page('Asha').getByTestId('overheard').getAttribute('data-phase').catch(() => null)) === 'reveal' && (await next.isVisible())) await next.click().catch(() => {})
+  const next = film.page('Yash').getByRole('button', { name: /Next/ })
+  if ((await film.page('Yash').getByTestId('overheard').getAttribute('data-phase').catch(() => null)) === 'reveal' && (await next.isVisible())) await next.click().catch(() => {})
 }
 
 /** Fast transmission for the cut: read, guess, reveal, next. */
@@ -421,150 +423,150 @@ test('overheard', async ({ browser }) => {
 
   // ---------------- lobby
   film.caption('Setting up')
-  film.focus('Asha')
+  film.focus('Yash')
   const lobby = setUpLobby(film, { game: 'overheard', teams, settings: { maxRounds: 3, clueSeconds: '3 min', guessSeconds: '2 min' } })
   await film.say(N.intro)
   await film.sayWhile(N.lobby, () => lobby)
   await start(film)
   await waitPhase(film, 'encrypt')
 
-  // Who encrypts round 1? The narration assumes Asha and Ben.
-  for (const n of NAMES) expect(await P(n).getByTestId('my-code').count(), `${n} encryptor?`).toBe(n === 'Asha' || n === 'Ben' ? 1 : 0)
-  const wordsA = await keywords(P('Chen'))
-  const wordsB = await keywords(P('Dev'))
-  const codeA1 = await codeOf(P('Asha'))
-  const codeB1 = await codeOf(P('Ben'))
+  // Who encrypts round 1? The narration assumes Yash and Charan.
+  for (const n of NAMES) expect(await P(n).getByTestId('my-code').count(), `${n} encryptor?`).toBe(n === 'Yash' || n === 'Charan' ? 1 : 0)
+  const wordsA = await keywords(P('Manu'))
+  const wordsB = await keywords(P('Aravind'))
+  const codeA1 = await codeOf(P('Yash'))
+  const codeB1 = await codeOf(P('Charan'))
   const cluesA1 = cluesFor(codeA1, wordsA, 1, [])
   const cluesB1 = cluesFor(codeB1, wordsB, 1, [])
-  const wordsLine = pre(`${wordsA[0]}, ${wordsA[1]}, ${wordsA[2]} and ${wordsA[3]}. Only Asha, Chen and Esha can see them.`)
-  const codeLine = pre(`Her code is ${codeA1.join(', ')}. So she needs a clue for ${codeA1.map((d) => wordsA[d - 1]).join(', then ')}.`)
+  const wordsLine = pre(`${wordsA[0]}, ${wordsA[1]}, ${wordsA[2]} and ${wordsA[3]}. Only Yash, Manu and Srinivas can see them.`)
+  const codeLine = pre(`His code is ${codeA1.join(', ')}. So he needs a clue for ${codeA1.map((d) => wordsA[d - 1]).join(', then ')}.`)
 
   // ---------------- secret words
   film.caption('Four secret words')
   film.focus(null)
-  film.spotlight('Chen')
-  await film.sayWhile(N.words, async () => { await show(P('Chen'), P('Chen').getByRole('tablist'), 'start'); await Promise.all(pending) })
+  film.spotlight('Manu')
+  await film.sayWhile(N.words, async () => { await show(P('Manu'), P('Manu').getByRole('tablist'), 'start'); await Promise.all(pending) })
   await film.say(wordsLine)
-  film.spotlight('Dev')
+  film.spotlight('Aravind')
   await film.sayWhile(N.rivals, async () => {
-    await show(P('Dev'), P('Dev').getByRole('tablist'), 'start')
+    await show(P('Aravind'), P('Aravind').getByRole('tablist'), 'start')
     await sleep(2500)
-    await tap(P('Dev').getByRole('tab', { name: /Their intel/ }))
+    await tap(P('Aravind').getByRole('tab', { name: /Their intel/ }))
   })
   await film.pause(600)
-  await tap(P('Dev').getByRole('tab', { name: /Our words/ }))
+  await tap(P('Aravind').getByRole('tab', { name: /Our words/ }))
 
   // ---------------- round 1: clues
   film.caption('Round 1 · Writing clues')
-  film.spotlight('Asha')
-  await P('Asha').evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' }))
+  film.spotlight('Yash')
+  await P('Yash').evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' }))
   await film.say(N.encryptor)
   await film.say(codeLine)
   await film.sayWhile(N.clues, async () => {
-    await typeClues(P('Asha'), cluesA1, 0, 2, 90)
-    await typeClues(P('Ben'), cluesB1)
+    await typeClues(P('Yash'), cluesA1, 0, 2, 90)
+    await typeClues(P('Charan'), cluesB1)
   })
-  await sendClues(P('Ben'))
+  await sendClues(P('Charan'))
   await film.sayWhile(N.sand, async () => {
-    await typeClues(P('Asha'), cluesA1, 2, 3, 90)
+    await typeClues(P('Yash'), cluesA1, 2, 3, 90)
   })
-  await sendClues(P('Asha'))
+  await sendClues(P('Yash'))
 
-  // ---------------- round 1: Asha on air
+  // ---------------- round 1: Yash on air
   await waitPhase(film, 'transmit')
   film.caption('On air')
   await film.say(N.onair)
-  await readAloud(film, 'Asha', cluesA1[0]!, 0)
-  film.spotlight('Ben')
+  await readAloud(film, 'Yash', cluesA1[0]!, 0)
+  film.spotlight('Charan')
   await film.sayWhile(N.popup, async () => {
-    await readAloud(film, 'Asha', cluesA1[1]!, 1)
+    await readAloud(film, 'Yash', cluesA1[1]!, 1)
   })
-  await readAloud(film, 'Asha', cluesA1[2]!, 2)
+  await readAloud(film, 'Yash', cluesA1[2]!, 2)
   await waitPhase(film, 'guess')
-  film.bubble('Ben', 'Hmm. Noted!', 2000)
+  film.bubble('Charan', 'Hmm. Noted!', 2000)
 
   // ---------------- round 1: decoding in team chat
   film.caption('Decoding in team chat')
-  film.spotlight('Chen')
+  film.spotlight('Manu')
   await film.sayWhile(N.decode, async () => {
-    await openChat(P('Chen'))
-    await openChat(P('Esha'))
-    await chat(P('Chen'), `"${cluesA1[0]}" has to be ${wordsA[codeA1[0]! - 1]}. ${codeA1[0]}!`, 45)
+    await openChat(P('Manu'))
+    await openChat(P('Srinivas'))
+    await chat(P('Manu'), `"${cluesA1[0]}" has to be ${wordsA[codeA1[0]! - 1]}. ${codeA1[0]}!`, 45)
     await sleep(600)
-    await chat(P('Esha'), `Yes! And "${cluesA1[1]}" is ${codeA1[1]}, ${wordsA[codeA1[1]! - 1]}`, 0)
+    await chat(P('Srinivas'), `Yes! And "${cluesA1[1]}" is ${codeA1[1]}, ${wordsA[codeA1[1]! - 1]}`, 0)
   })
-  film.bubble('Asha', 'Poker face. Saying nothing!', 2600)
-  await chat(P('Esha'), `"${cluesA1[2]}" is ${codeA1[2]}. So ${codeA1.join('-')}`, 0)
+  film.bubble('Yash', 'Poker face. Saying nothing!', 2600)
+  await chat(P('Srinivas'), `"${cluesA1[2]}" is ${codeA1[2]}. So ${codeA1.join('-')}`, 0)
   await sleep(2200)
-  await closeChat(P('Esha'))
+  await closeChat(P('Srinivas'))
   await sleep(500)
-  await closeChat(P('Chen'))
-  await film.sayWhile(N.stat, () => show(P('Chen'), P('Chen').getByRole('radio', { name: 'Clue 1 is 1' }), 'start'))
-  await film.sayWhile(N.pick, () => pickCode(P('Chen'), codeA1, 900, false))
-  await lockIn(P('Chen'), 500)
+  await closeChat(P('Manu'))
+  await film.sayWhile(N.stat, () => show(P('Manu'), P('Manu').getByRole('radio', { name: 'Clue 1 is 1' }), 'start'))
+  await film.sayWhile(N.pick, () => pickCode(P('Manu'), codeA1, 900, false))
+  await lockIn(P('Manu'), 500)
   await waitPhase(film, 'reveal')
   film.caption('The reveal')
-  await film.sayWhile(N.reveal1, () => show(P('Chen'), P('Chen').getByTestId('stamp')))
+  await film.sayWhile(N.reveal1, () => show(P('Manu'), P('Manu').getByTestId('stamp')))
   await nextIfReveal(film)
 
-  // ---------------- round 1: Ben on air
+  // ---------------- round 1: Charan on air
   await waitPhase(film, 'transmit')
-  film.caption('Ben’s turn')
-  film.spotlight('Ben')
-  await film.sayWhile(N.ben, () => readAloud(film, 'Ben', cluesB1[0]!, 0))
-  await readAloud(film, 'Ben', cluesB1[1]!, 1)
-  await readAloud(film, 'Ben', cluesB1[2]!, 2)
+  film.caption('Charan’s turn')
+  film.spotlight('Charan')
+  await film.sayWhile(N.ben, () => readAloud(film, 'Charan', cluesB1[0]!, 0))
+  await readAloud(film, 'Charan', cluesB1[1]!, 1)
+  await readAloud(film, 'Charan', cluesB1[2]!, 2)
   await waitPhase(film, 'guess')
-  film.spotlight('Esha')
+  film.spotlight('Srinivas')
   await film.sayWhile(N.benDecode, async () => {
-    await chat(P('Farhan'), `${codeB1.join('-')} easy`, 0)
+    await chat(P('Joga'), `${codeB1.join('-')} easy`, 0)
     await sleep(1500)
-    await closeChat(P('Farhan'))
+    await closeChat(P('Joga'))
     await sleep(1500)
-    await pickCode(P('Dev'), codeB1, 300, false)
+    await pickCode(P('Aravind'), codeB1, 300, false)
   })
-  await lockIn(P('Dev'))
+  await lockIn(P('Aravind'))
   await waitPhase(film, 'reveal')
-  await film.sayWhile(N.reveal2, () => show(P('Esha'), P('Esha').getByRole('tablist'), 'start'))
+  await film.sayWhile(N.reveal2, () => show(P('Srinivas'), P('Srinivas').getByRole('tablist'), 'start'))
   await nextIfReveal(film)
 
   // ---------------- round 2: clues
   await waitPhase(film, 'encrypt')
-  for (const n of NAMES) expect(await P(n).getByTestId('my-code').count(), `${n} encryptor in round 2?`).toBe(n === 'Chen' || n === 'Dev' ? 1 : 0)
-  const codeA2 = await codeOf(P('Chen'))
-  const codeB2 = await codeOf(P('Dev'))
+  for (const n of NAMES) expect(await P(n).getByTestId('my-code').count(), `${n} encryptor in round 2?`).toBe(n === 'Manu' || n === 'Aravind' ? 1 : 0)
+  const codeA2 = await codeOf(P('Manu'))
+  const codeB2 = await codeOf(P('Aravind'))
   const cluesA2 = cluesFor(codeA2, wordsA, 2, cluesA1)
   const cluesB2 = cluesFor(codeB2, wordsB, 2, cluesB1)
   film.caption('Round 2 · Interception')
-  film.spotlight('Dev')
-  await film.sayWhile(N.round2, async () => { await sleep(3500); await show(P('Dev'), P('Dev').getByTestId('clue-0')) })
+  film.spotlight('Aravind')
+  await film.sayWhile(N.round2, async () => { await sleep(3500); await show(P('Aravind'), P('Aravind').getByTestId('clue-0')) })
   film.spotlight(null)
   await film.cut(async () => {
-    await typeClues(P('Dev'), cluesB2)
-    await typeClues(P('Chen'), cluesA2)
-    await sendClues(P('Dev'))
-    await sendClues(P('Chen'))
+    await typeClues(P('Aravind'), cluesB2)
+    await typeClues(P('Manu'), cluesA2)
+    await sendClues(P('Aravind'))
+    await sendClues(P('Manu'))
     await waitPhase(film, 'transmit')
     await sleep(4500) // let the sand-timer toast fade
   }, 'clues written')
 
-  // ---------------- round 2: Dev on air
-  film.spotlight('Dev')
-  await film.sayWhile(N.devAir, () => readAloud(film, 'Dev', cluesB2[0]!, 0))
-  await readAloud(film, 'Dev', cluesB2[1]!, 1)
-  await readAloud(film, 'Dev', cluesB2[2]!, 2)
+  // ---------------- round 2: Aravind on air
+  film.spotlight('Aravind')
+  await film.sayWhile(N.devAir, () => readAloud(film, 'Aravind', cluesB2[0]!, 0))
+  await readAloud(film, 'Aravind', cluesB2[1]!, 1)
+  await readAloud(film, 'Aravind', cluesB2[2]!, 2)
   await waitPhase(film, 'guess')
 
   // ---------------- round 2: the interception
   film.caption('Their intel')
-  film.spotlight('Esha')
-  await expect(P('Esha').getByRole('heading', { name: 'Intercept their code!' })).toBeVisible()
+  film.spotlight('Srinivas')
+  await expect(P('Srinivas').getByRole('heading', { name: 'Intercept their code!' })).toBeVisible()
   await film.sayWhile(N.intel, async () => {
-    await P('Esha').evaluate(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }))
-    // Ben's team decodes their own code meanwhile, off to the side.
+    await P('Srinivas').evaluate(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }))
+    // Charan's team decodes their own code meanwhile, off to the side.
     const t = Date.now()
-    await pickCode(P('Farhan'), codeB2)
-    console.log(`[demo] Farhan pick took ${Date.now() - t}ms`)
+    await pickCode(P('Joga'), codeB2)
+    console.log(`[demo] Joga pick took ${Date.now() - t}ms`)
   })
   const reasoning = codeB2.map((d, i) => {
     const k = codeB1.indexOf(d)
@@ -572,63 +574,63 @@ test('overheard', async ({ browser }) => {
   })
   await film.sayWhile(N.plot, async () => {
     const t = Date.now()
-    await openChat(P('Esha'))
-    await chat(P('Asha'), reasoning[0]!, 0)
+    await openChat(P('Srinivas'))
+    await chat(P('Yash'), reasoning[0]!, 0)
     await sleep(1500)
-    await chat(P('Chen'), reasoning[1]!, 0)
+    await chat(P('Manu'), reasoning[1]!, 0)
     await sleep(1500)
-    await chat(P('Asha'), reasoning[2]!, 0)
+    await chat(P('Yash'), reasoning[2]!, 0)
     console.log(`[demo] plot chat took ${Date.now() - t}ms`)
   })
-  await chat(P('Esha'), `So ${codeB2.join('-')}. Locking it in!`, 30)
+  await chat(P('Srinivas'), `So ${codeB2.join('-')}. Locking it in!`, 30)
   await sleep(600)
   await film.sayWhile(N.tapRule, async () => {
-    await closeChat(P('Asha'))
-    await closeChat(P('Chen'))
-    await closeChat(P('Esha'))
-    await pickCode(P('Esha'), codeB2, 700, false)
+    await closeChat(P('Yash'))
+    await closeChat(P('Manu'))
+    await closeChat(P('Srinivas'))
+    await pickCode(P('Srinivas'), codeB2, 700, false)
   })
-  await lockIn(P('Esha'), 500)
+  await lockIn(P('Srinivas'), 500)
   await waitPhase(film, 'reveal')
   film.caption('Wiretapped!')
   await film.sayWhile(N.wiretapped, async () => {
-    await show(P('Esha'), P('Esha').getByTestId('stamp'))
+    await show(P('Srinivas'), P('Srinivas').getByTestId('stamp'))
     await sleep(3000)
-    film.bubble('Dev', 'Arre yaar! How?!', 2400)
+    film.bubble('Aravind', 'Arre yaar! How?!', 2400)
     await sleep(1200)
-    film.bubble('Esha', 'We were listening!', 2000)
+    film.bubble('Srinivas', 'We were listening!', 2000)
   })
   film.spotlight(null)
 
   // ---------------- skip to the end
   await film.cut(async () => {
     await nextIfReveal(film)
-    await quickTransmission(film, 'Chen', cluesA2, codeA2, ['Asha'], ['Ben'], false)
+    await quickTransmission(film, 'Manu', cluesA2, codeA2, ['Yash'], ['Charan'], false)
     // round 3
     await waitPhase(film, 'encrypt')
-    const codeA3 = await codeOf(P('Esha'))
-    const codeB3 = await codeOf(P('Farhan'))
+    const codeA3 = await codeOf(P('Srinivas'))
+    const codeB3 = await codeOf(P('Joga'))
     const cluesA3 = cluesFor(codeA3, wordsA, 3, [...cluesA1, ...cluesA2])
     const cluesB3 = cluesFor(codeB3, wordsB, 3, [...cluesB1, ...cluesB2])
-    await typeClues(P('Esha'), cluesA3)
-    await typeClues(P('Farhan'), cluesB3)
-    await sendClues(P('Esha'))
-    await sendClues(P('Farhan'))
-    await quickTransmission(film, 'Esha', cluesA3, codeA3, ['Asha'], ['Ben'], false)
-    await quickTransmission(film, 'Farhan', cluesB3, codeB3, ['Ben'], ['Asha'], true)
+    await typeClues(P('Srinivas'), cluesA3)
+    await typeClues(P('Joga'), cluesB3)
+    await sendClues(P('Srinivas'))
+    await sendClues(P('Joga'))
+    await quickTransmission(film, 'Srinivas', cluesA3, codeA3, ['Yash'], ['Charan'], false)
+    await quickTransmission(film, 'Joga', cluesB3, codeB3, ['Charan'], ['Yash'], true)
     for (const n of NAMES) await expect(P(n).getByTestId('results')).toBeVisible({ timeout: 30_000 })
     await sleep(2500)
   }, 'one round later')
 
   // ---------------- results
   film.caption('Game over')
-  film.spotlight('Asha')
-  await expect(P('Asha').getByTestId('results')).toContainText(/wiretapped two codes/)
-  await P('Asha').evaluate(() => window.scrollTo({ top: 0 }))
+  film.spotlight('Yash')
+  await expect(P('Yash').getByTestId('results')).toContainText(/wiretapped two codes/)
+  await P('Yash').evaluate(() => window.scrollTo({ top: 0 }))
   await film.say(N.results)
   await film.sayWhile(N.outro, async () => {
     await sleep(2000)
-    await show(P('Asha'), P('Asha').getByRole('heading', { name: /Highlights/ }), 'start')
+    await show(P('Yash'), P('Yash').getByRole('heading', { name: /Highlights/ }), 'start')
   })
   await film.pause(1200)
   await film.finish()

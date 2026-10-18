@@ -183,8 +183,10 @@ const N = {
   outro: 'So grab your friends, hop on a call, and start selling terrible startups!',
 }
 
-const NAMES = ['Asha', 'Ben', 'Chen', 'Dev', 'Esha', 'Farhan']
-const TEAMS = [['Asha', 'Chen', 'Esha'], ['Ben', 'Dev', 'Farhan']]
+/** The cast: Yash hosts and leads team 1. Join order alternates teams. */
+const P = { host: 'Yash', t1b: 'Manu', t1c: 'Srinivas', t2a: 'Charan', t2b: 'Aravind', t2c: 'Joga' } as const
+const NAMES = [P.host, P.t2a, P.t1b, P.t2b, P.t1c, P.t2c]
+const TEAMS = [[P.host, P.t1b, P.t1c], [P.t2a, P.t2b, P.t2c]]
 
 function jokesFor(product: string): [string, string, string] {
   const j = JOKES[product]
@@ -239,7 +241,7 @@ test('pitch-wars', async ({ browser }) => {
 
   // ---------------------------------------------------------------- lobby
   film.caption('Setting up')
-  film.focus('Asha')
+  film.focus(P.host)
   await film.sayWhile(N.intro, () => setUpLobby(film, { game: 'pitch-wars', teams: TEAMS, settings: { rounds: 1 } }))
   const teamName0 = ((await host.getByTestId('team-0').getByTestId('team-name').textContent()) ?? '').trim()
   await film.sayWhile(N.lobby, async () => {

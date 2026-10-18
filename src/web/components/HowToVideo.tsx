@@ -17,7 +17,7 @@ const RELEASE = 'https://github.com/ysai258/chaos-club/releases/download/how-to-
 
 /** Video length per game, for the button label. */
 const MINUTES: Record<string, string> = {
-  'bomb-squad': '4 min',
+  'bomb-squad': '5 min',
   overheard: '4 min',
   'friend-court': '3 min',
   'pitch-wars': '4 min',

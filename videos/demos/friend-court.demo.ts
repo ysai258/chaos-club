@@ -1,12 +1,10 @@
 import { test, expect, type Page } from '@playwright/test'
-import { execFileSync } from 'node:child_process'
-import { readFileSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
-import { setUpLobby, start, startFilm, tap, VIDEO_ROOT, type Film, type Timeline } from '../kit.ts'
+import { setUpLobby, start, startFilm, tap, type Film } from '../kit.ts'
 
 const GAME = 'friend-court'
-const NAMES = ['Asha', 'Ben', 'Chen', 'Dev', 'Esha', 'Farhan']
-const TEAMS = [['Asha', 'Chen', 'Esha'], ['Ben', 'Dev', 'Farhan']]
+const P = { host: 'Yash', a2: 'Manu', a3: 'Srinivas', b1: 'Charan', b2: 'Aravind', b3: 'Joga' } as const
+const NAMES = [P.host, P.b1, P.a2, P.b2, P.a3, P.b3]
+const TEAMS = [[P.host, P.a2, P.a3], [P.b1, P.b2, P.b3]]
 
 const N = {
   intro: 'Welcome to Friend Court! Six friends on one Meet call, phones in hand. The host picks Friend Court and makes two teams.',
@@ -29,31 +27,6 @@ const N = {
   results: 'Court adjourned! Most points wins, and every case and sentence is on the record forever.',
   awards: 'Plus silly awards for the stars of the courtroom. Who knew you were such a good lawyer?',
   outro: 'That is Friend Court. Get your friends on a call, open Chaos Club, and argue anyway!',
-}
-
-/**
- * Work around recordings that start late: a phone left on about:blank while
- * the others join records no frames, so its video runs a few seconds ahead of
- * the timeline. Each video should last (end - startedAt) plus the same close
- * flush; whatever a video is short by was lost at its start. Shift those tiles
- * and drop the first seconds of the film so every tile starts at or before t=0.
- */
-function resyncTiles(game: string): void {
-  const file = join(VIDEO_ROOT, 'raw', game, 'timeline.json')
-  const tl = JSON.parse(readFileSync(file, 'utf8')) as Timeline
-  const dur = (f: string) => Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f]).toString()) * 1000
-  const loss = tl.tiles.map((t) => tl.end - t.startedAt - dur(t.video))
-  const base = Math.min(...loss)
-  const starts = tl.tiles.map((t, i) => t.startedAt + (loss[i]! - base))
-  const shift = Math.max(0, ...starts)
-  tl.tiles.forEach((t, i) => { t.startedAt = Math.round(starts[i]! - shift) })
-  for (const e of tl.events) {
-    if ('at' in e) e.at = Math.max(0, e.at - shift)
-    if ('from' in e) { e.from = Math.max(0, e.from - shift); e.to = Math.max(0, e.to - shift) }
-  }
-  tl.end -= shift
-  writeFileSync(file, JSON.stringify(tl, null, 2))
-  console.log(`[resync] lost ms per tile: ${loss.map((l) => Math.round(l - base)).join(', ')}; trimmed ${Math.round(shift)}ms`)
 }
 
 const clean = (s: string) => s.replace(/\s+/g, ' ').trim()
@@ -115,7 +88,7 @@ test(GAME, async ({ browser }) => {
 
   // ------------------------------------------------------------ lobby
   film.caption('Friend Court')
-  film.focus('Asha')
+  film.focus(P.host)
   await film.sayWhile(N.intro, () => setUpLobby(film, { game: GAME, teams: TEAMS }))
   await film.sayWhile(N.settings, () => setUpLobby(film, { game: GAME, teams: TEAMS, settings: { cases: '2 cases (~7 min)', pace: 'Normal (45s / 30s)' } }))
   await start(film)
@@ -297,7 +270,7 @@ test(GAME, async ({ browser }) => {
 
   // ------------------------------------------------------------ results
   film.caption('Results')
-  film.spotlight('Asha')
+  film.spotlight(P.host)
   const host = film.room.host
   await film.sayWhile(N.results, async () => {
     await film.pause(3800)
@@ -311,5 +284,4 @@ test(GAME, async ({ browser }) => {
   await film.say(N.outro)
   await film.pause(1200)
   await film.finish()
-  resyncTiles(GAME)
 })
