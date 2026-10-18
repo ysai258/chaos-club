@@ -172,7 +172,7 @@ export async function startFilm(browser: Browser, opts: FilmOptions): Promise<Fi
     players.push({ name, page, context })
   }
   const start = Math.max(...startedAt)
-  const events: TimelineEvent[] = []
+  const events: TimelineEvent[] = [{ kind: 'caption', at: 0, text: 'Everyone joins the room' }]
   const now = () => Date.now() - start
   const byName = (name: string) => {
     const p = players.find((x) => x.name === name)

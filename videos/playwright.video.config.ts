@@ -24,6 +24,8 @@ export default defineConfig({
     baseURL: `http://localhost:${WEB_PORT}`,
     browserName: 'chromium',
     trace: 'off',
+    // A missing element fails fast instead of holding the record lock.
+    actionTimeout: 20_000,
   },
   webServer: [
     {

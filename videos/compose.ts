@@ -122,9 +122,9 @@ function mainAss(tl: Timeline, title: string, teamColors: string[]): string {
     const { x, y } = tilePos(i)
     const color = PALETTE[teamColors[tl.team[i]!] ?? 'ink']!
     const tag = i === 0 ? `${name}  (host)` : name
-    lines.push(
-      dlg(1, 0, end, 'Label', tag, x, W - x - TILE_W, y + TILE_H + 8, `{\\3c${ass(color)}\\4c${ass(color)}}`),
-    )
+    for (const [a, b] of outsideSpots(tl, 0, end)) {
+      lines.push(dlg(1, a, b, 'Label', tag, x, W - x - TILE_W, y + TILE_H + 8, `{\\3c${ass(color)}\\4c${ass(color)}}`))
+    }
   })
 
   for (const [i, ws] of spotWindows(tl)) {
@@ -141,7 +141,10 @@ function mainAss(tl: Timeline, title: string, teamColors: string[]): string {
       const i = tl.names.indexOf(e.name)
       const t = e.at / 1000
       const spotted = (spotWindows(tl).get(i) ?? []).some(([a, b]) => t >= a && t < b)
-      if (spotted) {
+      const someoneSpotted = allSpots(tl).some(([a, b]) => t >= a && t < b)
+      if (!spotted && someoneSpotted) {
+        lines.push(dlg(5, t, t + e.dur, 'Bubble', `${e.name}: “${plain(e.text)}”`, SPOT_X + 30, W - SPOT_X - SPOT_W + 30, SPOT_Y + SPOT_H - 230, '{\\fad(120,150)\\fs36}'))
+      } else if (spotted) {
         lines.push(dlg(5, t, t + e.dur, 'Bubble', `“${plain(e.text)}”`, SPOT_X + 30, W - SPOT_X - SPOT_W + 30, SPOT_Y + 140, '{\\fad(120,150)\\fs38}'))
       } else {
         const { x, y } = tilePos(i)
@@ -177,7 +180,9 @@ function focusFilters(tl: Timeline): string[] {
       const i = tl.names.indexOf(name)
       if (i < 0) continue
       const { x, y } = tilePos(i)
-      const en = `enable='between(t,${a.toFixed(2)},${b.toFixed(2)})'`
+      const ws = outsideSpots(tl, a, b)
+      if (ws.length === 0) continue
+      const en = `enable='${enableExpr(ws)}'`
       out.push(`drawbox=x=${x - 12}:y=${y - 12}:w=${TILE_W + 24}:h=${TILE_H + 24}:color=${ffhex(PALETTE.ink!)}:t=14:${en}`)
       out.push(`drawbox=x=${x - 8}:y=${y - 8}:w=${TILE_W + 16}:h=${TILE_H + 16}:color=${ffhex(PALETTE.sun!)}:t=7:${en}`)
     }
@@ -201,6 +206,24 @@ function spotWindows(tl: Timeline): Map<number, [number, number][]> {
     out.set(i, [...(out.get(i) ?? []), [a, b]])
   })
   return out
+}
+
+/** Every spotlight window, any tile, sorted. */
+function allSpots(tl: Timeline): [number, number][] {
+  return [...spotWindows(tl).values()].flat().sort((p, q) => p[0] - q[0])
+}
+
+/** [a, b] minus the spotlight windows. */
+function outsideSpots(tl: Timeline, a: number, b: number): [number, number][] {
+  const out: [number, number][] = []
+  let cur = a
+  for (const [sa, sb] of allSpots(tl)) {
+    if (sb <= cur || sa >= b) continue
+    if (sa > cur) out.push([cur, sa])
+    cur = Math.max(cur, sb)
+  }
+  if (cur < b) out.push([cur, b])
+  return out.filter(([x, y]) => y - x > 0.04)
 }
 
 const enableExpr = (ws: [number, number][]) => ws.map(([a, b]) => `between(t,${a.toFixed(2)},${b.toFixed(2)})`).join('+')
@@ -246,10 +269,24 @@ export async function compose(gameId: string, preview = false): Promise<string> 
   // 1) Main segment at raw time: grid + overlays + narration.
   const end = tl.end / 1000
   writeFileSync(join(work, 'main.ass'), mainAss(tl, meta.name, teamColors))
+  // Align every phone by the END of its recording, not the start. All six
+  // pages close together right after `end`, but a recording can silently
+  // lose its first seconds (the page is still blank), which would put that
+  // phone ahead of the narration if we trusted its start. Closing takes about
+  // a second, the same for every phone; the median over the six measures it.
+  const durs: number[] = []
+  for (const t of tl.tiles) {
+    const { stdout } = await run('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', t.video])
+    durs.push(Number.parseFloat(stdout.trim()))
+  }
+  const tails = tl.tiles.map((t, i) => durs[i]! - end + t.startedAt / 1000).sort((a, b) => a - b)
+  const closeDelay = tails[Math.floor(tails.length / 2)]!
   const inputs: string[] = []
-  tl.tiles.forEach((t) => {
-    // Every tile's recording began a little before t=0; skip that lead-in.
-    inputs.push('-ss', (Math.max(0, -t.startedAt) / 1000).toFixed(3), '-i', t.video)
+  const lead: number[] = []
+  tl.tiles.forEach((t, i) => {
+    const skip = durs[i]! - end - closeDelay
+    lead.push(skip < 0 ? -skip : 0)
+    inputs.push('-ss', Math.max(0, skip).toFixed(3), '-i', t.video)
   })
   const says = tl.events.filter((e) => e.kind === 'say') as Extract<Timeline['events'][number], { kind: 'say' }>[]
   for (const s of says) inputs.push('-i', s.audio)
@@ -257,13 +294,15 @@ export async function compose(gameId: string, preview = false): Promise<string> 
   const f: string[] = []
   f.push(`color=c=${ffhex(PALETTE.paper!)}:s=${W}x${H}:r=${FPS}:d=${end.toFixed(3)}[bg0]`)
   const spots = spotWindows(tl)
+  // A recording shorter than the film started late: hold its first frame.
+  const pad = (i: number) => (lead[i]! > 0.04 ? `,tpad=start_duration=${lead[i]!.toFixed(3)}:start_mode=clone` : '')
   tl.tiles.forEach((_, i) => {
     if (spots.has(i)) {
-      f.push(`[${i}:v]fps=${FPS},setpts=PTS-STARTPTS,split[s${i}a][s${i}b]`)
+      f.push(`[${i}:v]fps=${FPS},setpts=PTS-STARTPTS${pad(i)},split[s${i}a][s${i}b]`)
       f.push(`[s${i}a]scale=${TILE_W}:${TILE_H}:flags=lanczos[t${i}]`)
       f.push(`[s${i}b]scale=${SPOT_W}:${SPOT_H}:flags=lanczos[big${i}]`)
     } else {
-      f.push(`[${i}:v]fps=${FPS},scale=${TILE_W}:${TILE_H}:flags=lanczos,setpts=PTS-STARTPTS[t${i}]`)
+      f.push(`[${i}:v]fps=${FPS},setpts=PTS-STARTPTS${pad(i)},scale=${TILE_W}:${TILE_H}:flags=lanczos[t${i}]`)
     }
   })
   let cur = 'bg0'
@@ -314,7 +353,7 @@ export async function compose(gameId: string, preview = false): Promise<string> 
     join(work, 'outro.ass'),
     cardAss(OUTRO_S, [
       { style: 'Big', text: 'CHAOS CLUB', y: 700 },
-      { style: 'Body', text: 'Get your friends on a call.\\NOpen the link. Pick a side.', y: 900 },
+      { style: 'Body', text: 'Get your friends on a call.\nOpen the link. Pick a side.', y: 900 },
       { style: 'Pill', text: SITE, y: 1120, color: PALETTE.tomato },
       { style: 'Body', text: 'Free. No sign-up. No app.', y: 1300 },
     ]),
