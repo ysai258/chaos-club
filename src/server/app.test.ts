@@ -18,6 +18,8 @@ beforeAll(async () => {
   writeFileSync(join(dir, 'index.html'), '<!doctype html><title>Chaos Club</title>')
   writeFileSync(join(dir, 'assets', 'app-abc123.js'), 'console.log(1)')
   writeFileSync(join(dir, 'favicon.svg'), '<svg/>')
+  mkdirSync(join(dir, 'videos'))
+  writeFileSync(join(dir, 'videos', 'demo.mp4'), '0123456789')
   app = await createChaosServer({ games: { [testGame.id]: testGame }, log: silentLogger, port: 0, host: '127.0.0.1', staticDir: dir })
   base = `http://127.0.0.1:${app.port}`
   wsUrl = `ws://127.0.0.1:${app.port}/ws`
@@ -78,6 +80,24 @@ describe('http', () => {
     expect((await fetch(`${base}/..%2f..%2fetc%2fpasswd`)).status).not.toBe(500)
     const traversal = await fetch(`${base}/%2e%2e/%2e%2e/etc/passwd`)
     expect(await traversal.text()).not.toContain('root:')
+  })
+
+  it('serves video with byte ranges, which phones need to play it', async () => {
+    const whole = await fetch(`${base}/videos/demo.mp4`)
+    expect(whole.status).toBe(200)
+    expect(whole.headers.get('content-type')).toBe('video/mp4')
+    expect(whole.headers.get('accept-ranges')).toBe('bytes')
+
+    const part = await fetch(`${base}/videos/demo.mp4`, { headers: { range: 'bytes=2-5' } })
+    expect(part.status).toBe(206)
+    expect(part.headers.get('content-range')).toBe('bytes 2-5/10')
+    expect(await part.text()).toBe('2345')
+
+    const open = await fetch(`${base}/videos/demo.mp4`, { headers: { range: 'bytes=7-' } })
+    expect(await open.text()).toBe('789')
+    const suffix = await fetch(`${base}/videos/demo.mp4`, { headers: { range: 'bytes=-3' } })
+    expect(await suffix.text()).toBe('789')
+    expect((await fetch(`${base}/videos/demo.mp4`, { headers: { range: 'bytes=50-60' } })).status).toBe(416)
   })
 })
 

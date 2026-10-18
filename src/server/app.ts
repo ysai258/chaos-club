@@ -51,6 +51,7 @@ const MIME: Record<string, string> = {
   '.txt': 'text/plain; charset=utf-8',
   '.webmanifest': 'application/manifest+json',
   '.mp3': 'audio/mpeg',
+  '.mp4': 'video/mp4',
   '.wav': 'audio/wav',
 }
 
@@ -114,12 +115,30 @@ export function createChaosServer(opts: ServerOptions): Promise<ChaosServer> {
     }
     const isIndex = target === indexHtml
     const hashed = target.includes(`${sep}assets${sep}`)
-    res.writeHead(200, {
+    const size = statSync(target).size
+    const headers: Record<string, string | number> = {
       'content-type': MIME[extname(target).toLowerCase()] ?? 'application/octet-stream',
       'cache-control': isIndex ? 'no-cache' : hashed ? 'public, max-age=31536000, immutable' : 'public, max-age=3600',
       'x-content-type-options': 'nosniff',
-      'content-length': statSync(target).size,
-    })
+      'accept-ranges': 'bytes',
+    }
+    // Byte ranges: video players (iOS Safari above all) refuse to play
+    // without them, and seeking needs them everywhere.
+    const range = /^bytes=(\d*)-(\d*)$/.exec(String(req.headers.range ?? ''))
+    if (range && !isIndex && (range[1] || range[2])) {
+      let start = range[1] ? Number(range[1]) : size - Number(range[2])
+      let end = range[1] && range[2] ? Number(range[2]) : size - 1
+      start = Math.max(0, start)
+      end = Math.min(end, size - 1)
+      if (start > end || start >= size) {
+        res.writeHead(416, { 'content-range': `bytes */${size}` })
+        return void res.end()
+      }
+      res.writeHead(206, { ...headers, 'content-range': `bytes ${start}-${end}/${size}`, 'content-length': end - start + 1 })
+      if (req.method === 'HEAD') return void res.end()
+      return void createReadStream(target, { start, end }).pipe(res)
+    }
+    res.writeHead(200, { ...headers, 'content-length': size })
     if (req.method === 'HEAD') return void res.end()
     createReadStream(target).pipe(res)
   }

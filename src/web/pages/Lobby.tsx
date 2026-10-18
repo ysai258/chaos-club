@@ -3,6 +3,7 @@ import type { PlayerInfo, TeamInfo } from '../../shared/protocol.ts'
 import { startBlocker } from '../../shared/start-check.ts'
 import type { RoomView } from '../lib/room-context.ts'
 import { GameCard } from '../components/GameCard.tsx'
+import { HowToVideoButton } from '../components/HowToVideo.tsx'
 import { SettingsForm } from '../components/SettingsForm.tsx'
 import { ShareButton } from '../components/ShareButton.tsx'
 import { Avatar, Badge, Button, Card, COLOR, Input, MuteToggle, Sheet, Spinner, Stepper, cn, haptic, playSound } from '../ui/index.ts'
@@ -211,6 +212,7 @@ export function Lobby({ v }: { v: RoomView }) {
                         </li>
                       ))}
                     </ol>
+                    <HowToVideoButton gameId={game.id} name={game.meta.name} emoji={game.meta.emoji} color={game.meta.color} howToPlay={game.meta.howToPlay} />
                   </Card>
                   {game.settingsSpec.length > 0 && (
                     <Card className="flex flex-col gap-3" tilt="left" data-testid="settings">

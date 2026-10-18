@@ -6,6 +6,7 @@ import { platformGames } from './TestLabScreen.tsx'
 import type { RoomView } from '../lib/room-context.ts'
 import { GameErrorBoundary } from '../components/ErrorBoundary.tsx'
 import { TeamChat } from '../components/TeamChat.tsx'
+import { HowToVideoButton } from '../components/HowToVideo.tsx'
 import { Button, Card, Countdown, MuteToggle, Sheet, TeamPill, cn } from '../ui/index.ts'
 
 /** Room chrome around a running game: header, scoreboard, timer, chat. */
@@ -122,6 +123,9 @@ export function GameView({ v }: { v: RoomView }) {
             <span className="font-bold">Room code</span>
             <span className="font-chunky text-xl tracking-wider">{room.code}</span>
           </div>
+          {game && (
+            <HowToVideoButton compact gameId={room.gameId} name={game.meta.name} emoji={game.meta.emoji} color={game.meta.color} howToPlay={game.meta.howToPlay} />
+          )}
           {game && (
             <details className="rounded-2xl border-3 border-ink bg-white p-3">
               <summary className="min-h-8 cursor-pointer font-display font-extrabold">How to play</summary>
