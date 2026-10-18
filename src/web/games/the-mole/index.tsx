@@ -349,8 +349,8 @@ function Unmasking({ view, player, team, send }: P) {
                   const pt = team(p.teamId)
                   return (
                     <li key={j} className="flex items-center justify-between gap-2 rounded-xl border-2 border-ink bg-white px-2 py-1 text-sm">
-                      <span className="min-w-0 truncate font-bold">{p.label} → {pt?.emoji} {pt?.name}</span>
-                      <PointsBadge points={p.points} />
+                      <span className="min-w-0 flex-1 truncate font-bold">{p.label} → {pt?.emoji} {pt?.name}</span>
+                      <span className="shrink-0"><PointsBadge points={p.points} /></span>
                     </li>
                   )
                 })}
