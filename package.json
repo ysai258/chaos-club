@@ -4,7 +4,9 @@
   "version": "1.0.0",
   "type": "module",
   "description": "Team party games for friends on a video call. Open a link, pick a side, cause chaos.",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "concurrently -k -n server,web -c magenta,cyan \"npm:dev:server\" \"npm:dev:web\"",
     "dev:server": "tsx watch src/server/index.ts",
@@ -14,7 +16,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "video:record": "playwright test -c videos/playwright.video.config.ts",
+    "video:compose": "tsx videos/compose.ts"
   },
   "dependencies": {
     "ws": "^8.22.0",
