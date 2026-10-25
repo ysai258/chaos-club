@@ -12,10 +12,11 @@ import type { Conn } from './room.ts'
 import { newId } from './random.ts'
 import { TEST_GAME_ID } from './test-game.ts'
 import type { Logger } from './log.ts'
+import type { Stats } from './stats.ts'
 
 export const MAX_PAYLOAD = 16 * 1024
 
-export interface ServerOptions extends Omit<HubOptions, 'games' | 'log'> {
+export interface ServerOptions extends Omit<HubOptions, 'games' | 'log' | 'stats'> {
   games: Record<string, AnyGame>
   log: Logger
   port: number
@@ -24,6 +25,10 @@ export interface ServerOptions extends Omit<HubOptions, 'games' | 'log'> {
   staticDir?: string | null
   sweepEveryMs?: number
   heartbeatMs?: number
+  /** Play counters served at GET /stats. Omit to turn the endpoint off. */
+  stats?: Stats
+  /** How often the online count is sampled for the daily peak. */
+  statsSampleMs?: number
 }
 
 export interface ChaosServer {
@@ -143,11 +148,28 @@ export function createChaosServer(opts: ServerOptions): Promise<ChaosServer> {
     createReadStream(target).pipe(res)
   }
 
+  // GET /stats: counts only (no names, codes or IPs), so it is public like /health.
+  const serveStats = (res: ServerResponse, url: URL): void => {
+    const stats = opts.stats
+    if (!stats) return json(res, 404, { error: 'not_found' })
+    const days = Number(url.searchParams.get('days') ?? 14)
+    stats
+      .report(days, hub.liveCounts())
+      .then((body) => json(res, 200, body))
+      .catch((e: unknown) =>
+        json(res, 503, { error: `Stats are unavailable right now (${e instanceof Error ? e.message : String(e)})`, live: hub.liveCounts() }),
+      )
+  }
+
   const server = createServer((req, res) => {
     const url = new URL(req.url ?? '/', 'http://localhost')
     const path = url.pathname
     try {
       if (path === '/health') return json(res, 200, { ok: true, rooms: hub.rooms.size, uptime: Math.round(process.uptime()) })
+      if (path === '/stats' && req.method === 'GET') {
+        res.setHeader('access-control-allow-origin', '*')
+        return serveStats(res, url)
+      }
       if (path === '/api/games' && req.method === 'GET') return json(res, 200, { games: gameList })
       if (path === '/api/rooms' && req.method === 'POST') {
         req.resume()
@@ -233,8 +255,11 @@ export function createChaosServer(opts: ServerOptions): Promise<ChaosServer> {
     }
   }, opts.heartbeatMs ?? 25_000)
   const sweeper = setInterval(() => hub.sweep(Date.now()), opts.sweepEveryMs ?? 60_000)
+  const sampler = opts.stats ? setInterval(() => opts.stats?.online(hub.liveCounts().online), opts.statsSampleMs ?? 5000) : null
+  opts.stats?.start()
   heartbeat.unref()
   sweeper.unref()
+  sampler?.unref()
 
   return new Promise((resolvePromise, reject) => {
     server.once('error', reject)
@@ -249,10 +274,13 @@ export function createChaosServer(opts: ServerOptions): Promise<ChaosServer> {
           new Promise<void>((done) => {
             clearInterval(heartbeat)
             clearInterval(sweeper)
+            if (sampler) clearInterval(sampler)
+            opts.stats?.stop()
             hub.disposeAll()
             for (const ws of wss.clients) ws.terminate()
             wss.close()
-            server.close(() => done())
+            // Write the last counters out before saying we're closed.
+            server.close(() => void Promise.resolve(opts.stats?.flush()).finally(done))
             server.closeAllConnections?.()
           }),
       })

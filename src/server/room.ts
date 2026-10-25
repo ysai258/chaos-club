@@ -29,6 +29,7 @@ import { TEAM_COLORS, TEAM_NAMES } from './names.ts'
 import { hashString, mulberry32, newId, newToken, shuffle } from './random.ts'
 import { MAX_CHAT, MAX_NAME, MAX_TEAM_NAME, cleanAvatar, cleanText } from './schema.ts'
 import type { Logger } from './log.ts'
+import type { Stats } from './stats.ts'
 
 export interface Conn {
   readonly id: string
@@ -46,6 +47,8 @@ export interface RoomOptions {
   /** How long a disconnected host keeps the crown. */
   hostGraceMs: number
   log: Logger
+  /** Play counters (counts only). Optional so tests can leave it out. */
+  stats?: Pick<Stats, 'count' | 'gameStarted'> | undefined
 }
 
 export const MAX_PLAYERS = 24
@@ -161,6 +164,7 @@ export class Room {
     } else {
       if (this.players.size >= MAX_PLAYERS) return this.err(conn, 'room_full', `This room is full (${MAX_PLAYERS} max).`)
       p = this.addPlayer(conn, msg.name, msg.avatar)
+      this.opts.stats?.count('joins')
     }
     conn.roomCode = this.code
     conn.playerId = p.id
@@ -543,6 +547,7 @@ export class Room {
     this.results = null
     this.chat.clear()
     this.opts.log.info('game started', { room: this.code, game: def.id, players: roster.size })
+    this.opts.stats?.gameStarted(def.id, roster.size)
     return true
   }
 
@@ -603,6 +608,7 @@ export class Room {
     this.phase = 'results'
     this.clearTimer()
     this.opts.log.info('game over', { room: this.code, game: g.def.id })
+    this.opts.stats?.count('gamesFinished')
     return true
   }
 

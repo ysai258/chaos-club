@@ -5,6 +5,7 @@ import { games as registry } from '../games/registry.ts'
 import { testGame } from './test-game.ts'
 import { createChaosServer } from './app.ts'
 import { consoleLogger as log } from './log.ts'
+import { statsFromEnv } from './stats.ts'
 
 // The platform's own test game joins the lineup only for test runs.
 const games = process.env.CHAOS_TEST_GAME === '1' && process.env.NODE_ENV !== 'production' ? { ...registry, [testGame.id]: testGame } : registry
@@ -22,8 +23,9 @@ const staticDir =
 process.on('uncaughtException', (e) => log.error('uncaught exception', { error: e.stack ?? e.message }))
 process.on('unhandledRejection', (e) => log.error('unhandled rejection', { error: String(e) }))
 
-const app = await createChaosServer({ games, log, port, staticDir })
-log.info('chaos club is up', { port: app.port, static: staticDir ?? '(dev: vite serves the UI)', games: Object.keys(games) })
+const stats = statsFromEnv()
+const app = await createChaosServer({ games, log, port, staticDir, stats })
+log.info('chaos club is up', { port: app.port, static: staticDir ?? '(dev: vite serves the UI)', games: Object.keys(games), stats: stats.backend.kind })
 
 const shutdown = (signal: string) => {
   log.info('shutting down', { signal })

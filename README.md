@@ -115,6 +115,16 @@ Free-tier things to know:
 - Rooms are in memory, so a **redeploy or restart ends games in progress**.
   Don't deploy during game night.
 
+## Play stats
+
+`GET /stats?days=14` returns counts only (no names, room codes or IPs): per
+day in India time, rooms created, seats joined, games started (also per game),
+games finished, players in games and peak online, plus live rooms, rooms
+mid-game and people connected now. Counters are batched in memory and written
+every 30 s. Set `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` (or the
+`KV_REST_API_*` names) in Render's environment to keep them across restarts
+and free-tier sleeps; without them they cover the time since the last wake-up.
+
 ## Fair play
 
 Server-side validation on every message, per-socket rate limits, a 16 KB

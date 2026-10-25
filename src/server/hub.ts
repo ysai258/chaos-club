@@ -7,6 +7,7 @@ import { Room, type Conn } from './room.ts'
 import { generateCode } from './random.ts'
 import { parseClientMessage } from './schema.ts'
 import type { Logger } from './log.ts'
+import type { Stats } from './stats.ts'
 
 export interface HubOptions {
   games: Record<string, AnyGame>
@@ -19,6 +20,8 @@ export interface HubOptions {
   emptyMs?: number
   /** Token bucket per socket. */
   rate?: { burst: number; perSecond: number }
+  /** Play counters (counts only). */
+  stats?: Pick<Stats, 'count' | 'gameStarted'> | undefined
 }
 
 interface Bucket {
@@ -33,7 +36,7 @@ export const MAX_ROOMS = 2000
 export class Hub {
   readonly rooms = new Map<string, Room>()
   private readonly buckets = new WeakMap<Conn, Bucket>()
-  private readonly opts: Required<HubOptions>
+  private readonly opts: Required<Omit<HubOptions, 'stats'>> & Pick<HubOptions, 'stats'>
 
   constructor(opts: HubOptions) {
     this.opts = {
@@ -55,8 +58,10 @@ export class Hub {
       graceMs: this.opts.graceMs,
       hostGraceMs: this.opts.hostGraceMs,
       log: this.opts.log,
+      stats: this.opts.stats,
     })
     this.rooms.set(code, room)
+    this.opts.stats?.count('roomsCreated')
     this.opts.log.info('room created', { room: code })
     return room
   }
@@ -116,6 +121,17 @@ export class Hub {
       }
     }
     return closed
+  }
+
+  /** Live counts for /stats: rooms open, rooms mid-game, people connected right now. */
+  liveCounts(): { rooms: number; playing: number; online: number } {
+    let playing = 0
+    let online = 0
+    for (const room of this.rooms.values()) {
+      if (room.currentPhase === 'playing') playing++
+      online += room.connectedCount
+    }
+    return { rooms: this.rooms.size, playing, online }
   }
 
   disposeAll(): void {
